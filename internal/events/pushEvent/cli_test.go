@@ -2,9 +2,12 @@ package pushEvent
 
 import (
 	"Bobby/internal/token"
+	"Bobby/internal/utils"
 	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
+	"github.com/joho/godotenv"
+	"path/filepath"
 	"testing"
 )
 
@@ -49,6 +52,12 @@ func testEachFactory(cli cliFactory, t *testing.T) {
 }
 
 func TestCliFactory(t *testing.T) {
+
+	err := godotenv.Load(filepath.Join(utils.GetProjectRoot(), ".env"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	accessToken, _ := token.IssueToken(44151598, 571145096)
 

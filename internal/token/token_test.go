@@ -24,13 +24,25 @@ func TestIssueToken(t *testing.T) {
 	})
 
 	t.Run("generate-jwt-token", func(t *testing.T) {
-		_, err := generateJWT()
+		err := godotenv.Load(filepath.Join(utils.GetProjectRoot(), ".env"))
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		_, err = generateJWT()
 		if err != nil {
 			t.Error(err)
 		}
 	})
 
 	t.Run("issue-access-token", func(t *testing.T) {
+		err := godotenv.Load(filepath.Join(utils.GetProjectRoot(), ".env"))
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
 		token, err := IssueToken(44151598, 571145096)
 
 		if err != nil {
