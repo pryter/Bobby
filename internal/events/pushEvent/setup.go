@@ -38,9 +38,21 @@ func SetupPathVars(repositoryID int64, options PathVarSetupOptions) LocalPathVar
 
 // Setup build environments
 
-type BuildEnvSetupOptions struct {
-	initCMD  string
-	buildCMD string
+type EnvironmentType string
+
+const (
+	EnvNode EnvironmentType = "node"
+)
+
+type ExecutableCommand struct {
+	Name string
+	Args string
+}
+
+type BuildEnvironment struct {
+	InitCommand  ExecutableCommand
+	BuildCommand ExecutableCommand
+	EnvType      EnvironmentType
 }
 
 func SetupBuildEnvironment(preset string, options BuildEnvironment) BuildEnvironment {
