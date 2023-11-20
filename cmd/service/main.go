@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Bobby/internal/event"
+	"Bobby/internal/events/pushEvent"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/joho/godotenv"
 	"log"
@@ -25,14 +25,14 @@ func main() {
 		payload, err := hook.Parse(r, github.PushEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
-				// ok event wasn't one of the ones asked to be parsed
+				// ok events wasn't one of the ones asked to be parsed
 			}
 		}
 		switch payload.(type) {
 
 		case github.PushPayload:
 			pushPayload := payload.(github.PushPayload)
-			event.WebhookPushEvent(pushPayload)
+			pushEvent.WebhookPushEvent(pushPayload)
 		}
 	})
 

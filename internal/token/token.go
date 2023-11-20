@@ -11,7 +11,12 @@ type tokenReqBody struct {
 	RepositoryIds int64 `json:"repository_ids"`
 }
 
-func GenerateAccessToken(installationID int, repositoryID int64) (string, error) {
+type tokenResponse struct {
+	Token  string `json:"token"`
+	Expire string `json:"expires_at"`
+}
+
+func IssueToken(installationID int, repositoryID int64) (string, error) {
 	postURL := fmt.Sprintf("https://api.github.com/app/installations/%d/access_tokens", installationID)
 
 	body := tokenReqBody{repositoryID}
@@ -29,5 +34,20 @@ func GenerateAccessToken(installationID int, repositoryID int64) (string, error)
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
 	req.Header.Add("X-GitHub-Api-Version", "2022-11-28")
 
-	return "", nil
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusCreated {
+		panic(res.Status)
+	}
+
+	target := &tokenResponse{}
+	err = json.NewDecoder(res.Body).Decode(target)
+
+	return target.Token, nil
 }

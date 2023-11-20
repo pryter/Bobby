@@ -3,13 +3,17 @@ package token
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"os"
+	"strings"
 	"time"
 )
 
 func generateJWT() (string, error) {
-	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(os.Getenv("APP_KEY")))
+
+	fixedToken := strings.ReplaceAll(os.Getenv("APP_TOKEN"), "\\n", "\n")
+	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(fixedToken))
 
 	if err != nil {
+		panic(err)
 		return "", err
 	}
 
