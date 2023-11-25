@@ -1,6 +1,7 @@
-package main
+package service
 
 import (
+	"Bobby/internal/events"
 	"Bobby/internal/events/pushEvent"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/joho/godotenv"
@@ -12,7 +13,7 @@ const (
 	path = "/webhooks"
 )
 
-func main() {
+func StartWebhookService() {
 	godotenv.Load()
 
 	hook, err := github.New(github.Options.Secret("bah"))
@@ -20,6 +21,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	pool := events.InitConcurrentPool(events.ConcurrentPoolOptions{MaxConcurrentTasks: 2})
 
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := hook.Parse(r, github.PushEvent)
@@ -32,7 +35,9 @@ func main() {
 
 		case github.PushPayload:
 			pushPayload := payload.(github.PushPayload)
-			pushEvent.WebhookPushEvent(pushPayload)
+			pool.Add(func() {
+				pushEvent.WebhookPushEvent(pushPayload)
+			})
 		}
 	})
 

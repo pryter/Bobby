@@ -1,7 +1,7 @@
 package pushEvent
 
 import (
-	"Bobby/internal/token"
+	"Bobby/internal/gitAPI"
 	"errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-playground/webhooks/v6/github"
@@ -14,8 +14,10 @@ func WebhookPushEvent(payload github.PushPayload) {
 		[X] generate app access token
 		[X] clone or pull repository
 		[X] build project
-		[ ] create commit check run
+		[X] create commit check run
 		[ ] provide artifacts url
+		[ ] log tunnel
+		[ ] error handling
 	*/
 
 	// Init required variables
@@ -23,7 +25,8 @@ func WebhookPushEvent(payload github.PushPayload) {
 	repoID := payload.Repository.ID
 
 	// Issue github's access token
-	accessToken, _ := token.IssueToken(installID, repoID)
+	accessToken, _ := gitAPI.IssueAccessToken(installID, repoID)
+	checkrun := gitAPI.NewCheckRun(payload.Repository.HooksURL, payload.Commits[0].ID, accessToken)
 
 	// Initiate CLI tools
 	cli := cliFactory{
@@ -45,5 +48,7 @@ func WebhookPushEvent(payload github.PushPayload) {
 
 	// Export and compress artifacts to zip file
 	cli.ExportArtifact()
+
+	checkrun.Update("completed", "success")
 
 }

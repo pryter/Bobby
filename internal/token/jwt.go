@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func generateJWT() (string, error) {
+func GenerateJWT() (string, error) {
 
 	fixedToken := strings.ReplaceAll(os.Getenv("APP_TOKEN"), "\\n", "\n")
 	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(fixedToken))
