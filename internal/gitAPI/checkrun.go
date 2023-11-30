@@ -63,15 +63,24 @@ func NewCheckRun(url string, head string, token string) *CheckRun {
 	return checkrun
 }
 
+type CheckRunConclusion string
+
+var (
+	ConclusionSuccess   CheckRunConclusion = "success"
+	ConclusionFailure   CheckRunConclusion = "failure"
+	ConclusionCancelled CheckRunConclusion = "cancelled"
+	ConclusionTimedOut  CheckRunConclusion = "timed_out"
+)
+
 func (c *CheckRun) Update(
 	status string,
-	conclusion string,
+	conclusion CheckRunConclusion,
 	output CheckRunOutput,
 ) {
 	type updateCheckRunBody struct {
-		Status     string         `json:"status"`
-		Conclusion string         `json:"conclusion"`
-		Output     CheckRunOutput `json:"output"`
+		Status     string             `json:"status"`
+		Conclusion CheckRunConclusion `json:"conclusion"`
+		Output     CheckRunOutput     `json:"output"`
 	}
 
 	type updateCheckRunResponse struct {

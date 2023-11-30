@@ -68,7 +68,7 @@ func WebhookPushEvent(payload github.PushPayload) {
 			lf.NoCMD(err, "Can not pull changes from the remote.")
 
 			checkrun.Update(
-				"completed", "failed",
+				"completed", gitAPI.ConclusionFailure,
 				gitAPI.CheckRunOutput{
 					Title:   "Repository Error",
 					Summary: "Build server can not pull latest changes from this repo.",
@@ -88,7 +88,7 @@ func WebhookPushEvent(payload github.PushPayload) {
 		)
 
 		checkrun.Update(
-			"completed", "failed",
+			"completed", gitAPI.ConclusionFailure,
 			gitAPI.CheckRunOutput{
 				Title:   "Project Error",
 				Summary: "Build server can not initialise the project.",
@@ -104,7 +104,7 @@ func WebhookPushEvent(payload github.PushPayload) {
 		)
 
 		checkrun.Update(
-			"completed", "failed",
+			"completed", gitAPI.ConclusionFailure,
 			gitAPI.CheckRunOutput{
 				Title:   "Build Error",
 				Summary: "Build server can not build the project.",
@@ -117,7 +117,7 @@ func WebhookPushEvent(payload github.PushPayload) {
 	cli.ExportArtifact()
 
 	checkrun.Update(
-		"completed", "success", gitAPI.CheckRunOutput{
+		"completed", gitAPI.ConclusionSuccess, gitAPI.CheckRunOutput{
 			Title: "Build Success",
 			Summary: "Successfully built the changes. " +
 				"The artifact file can be access at https://bobby.pryter.me/some_artifact_uri",
