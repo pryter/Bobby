@@ -6,18 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-playground/webhooks/v6/github"
-	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
+// HTTPServiceConfig is general config struct for HTTP services
 type HTTPServiceConfig struct {
 	Port int    `mapstructure:"port"`
 	Path string `mapstructre:"path"`
 }
 
+// StartWebhookService initiates all webhook services
 func StartWebhookService(options HTTPServiceConfig) {
-	godotenv.Load()
 
 	hook, err := github.New(github.Options.Secret("bah"))
 
@@ -25,19 +25,28 @@ func StartWebhookService(options HTTPServiceConfig) {
 		panic(err)
 	}
 
+	// create concurrent pool for concurrent build tasks
 	pool := events.InitConcurrentPool(events.ConcurrentPoolOptions{MaxConcurrentTasks: 2})
 
 	http.HandleFunc(options.Path, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := hook.Parse(r, github.PushEvent)
+
 		if err != nil {
+			// event_not_found errors are negligible
 			if errors.Is(err, github.ErrEventNotFound) {
 				log.Error().Err(err)
 			}
+
+			log.Fatal().Err(err)
 		}
 
 		switch payload.(type) {
+
+		// github's push event case
 		case github.PushPayload:
 			pushPayload := payload.(github.PushPayload)
+
+			// add event to pool and let ConcurrentPool handle
 			pool.Add(func() {
 				pushEvent.WebhookPushEvent(pushPayload)
 			})
@@ -47,7 +56,6 @@ func StartWebhookService(options HTTPServiceConfig) {
 	err = http.ListenAndServe(fmt.Sprintf(":%d", options.Port), nil)
 
 	if err != nil {
-		log.Fatal().Err(err)
-		return
+		log.Fatal().Err(err).Msg("Unable to start http server.")
 	}
 }

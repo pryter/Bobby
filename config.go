@@ -28,16 +28,12 @@ func init() {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		log.Panic().Err(err).Msg("unable to find bobby-notes")
+		log.Panic().Err(err).Msg("Unable to find bobby-notes")
 	}
 
 	err = viper.Unmarshal(&Configs)
 
-	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
-	}
-
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("Unable to unpack config file.")
 	}
 }

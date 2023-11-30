@@ -2,6 +2,7 @@ package pushEvent
 
 import (
 	"Bobby/internal/utils"
+	"fmt"
 	"path"
 	"strconv"
 )
@@ -19,10 +20,15 @@ type PathVarSetupOptions struct {
 	BuildOutputFolder string
 }
 
-func SetupPathVars(repositoryID int64, options PathVarSetupOptions) LocalPathVariables {
+func SetupPathVars(
+	repositoryID int64,
+	options PathVarSetupOptions,
+) LocalPathVariables {
 
 	prjRoot := utils.GetProjectRoot()
-	lockerPath := path.Join(prjRoot, "locker", strconv.FormatInt(repositoryID, 10))
+	lockerPath := path.Join(
+		prjRoot, "locker", strconv.FormatInt(repositoryID, 10),
+	)
 
 	repoPath := path.Join(lockerPath, "repo")
 	artifactsOutPath := path.Join(lockerPath, "artifacts")
@@ -33,7 +39,12 @@ func SetupPathVars(repositoryID int64, options PathVarSetupOptions) LocalPathVar
 		artifactSource = path.Join(repoPath, options.BuildOutputFolder)
 	}
 
-	return LocalPathVariables{Locker: lockerPath, Repository: repoPath, ArtifactOut: artifactsOutPath, ArtifactSource: artifactSource}
+	return LocalPathVariables{
+		Locker:         lockerPath,
+		Repository:     repoPath,
+		ArtifactOut:    artifactsOutPath,
+		ArtifactSource: artifactSource,
+	}
 }
 
 // Setup build environments
@@ -49,13 +60,20 @@ type ExecutableCommand struct {
 	Args string
 }
 
+func (r ExecutableCommand) flattened() string {
+	return fmt.Sprintf("%s %s", r.Name, r.Args)
+}
+
 type BuildEnvironment struct {
 	InitCommand  ExecutableCommand
 	BuildCommand ExecutableCommand
 	EnvType      EnvironmentType
 }
 
-func SetupBuildEnvironment(preset string, options BuildEnvironment) BuildEnvironment {
+func SetupBuildEnvironment(
+	preset string,
+	options BuildEnvironment,
+) BuildEnvironment {
 	switch preset {
 	case "node-default":
 		return BuildEnvironment{

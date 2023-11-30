@@ -1,4 +1,4 @@
-app_version: 0.1.1
+app_version: 0.1.2b
 http_services:
   webhook:
     port: 4242
