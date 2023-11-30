@@ -17,11 +17,11 @@ type logFactory struct {
 func newLogFactory(repoID int64) logFactory {
 	return logFactory{
 		func(err error, msg string) {
-			log.Fatal().Err(err).Str(
+			log.Error().Err(err).Str(
 				"repo_id", strconv.Itoa(int(repoID)),
 			).Msg(msg)
 		}, func(err error, msg string, cmd ExecutableCommand) {
-			log.Fatal().Err(err).Str(
+			log.Warn().Err(err).Str(
 				"repo_id", strconv.Itoa(int(repoID)),
 			).Str("command", cmd.flattened()).Msg(msg)
 		},

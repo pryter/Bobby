@@ -37,7 +37,7 @@ func StartWebhookService(options HTTPServiceConfig) {
 				log.Error().Err(err)
 			}
 
-			log.Fatal().Err(err)
+			log.Error().Err(err)
 		}
 
 		switch payload.(type) {
@@ -56,6 +56,6 @@ func StartWebhookService(options HTTPServiceConfig) {
 	err = http.ListenAndServe(fmt.Sprintf(":%d", options.Port), nil)
 
 	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to start http server.")
+		log.Error().Err(err).Msg("Unable to start http server.")
 	}
 }

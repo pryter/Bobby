@@ -17,7 +17,7 @@ func GenerateJWT() (string, error) {
 	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(fixedToken))
 
 	if err != nil {
-		log.Fatal().Msg("Unable to parse RSA key from PEM.")
+		log.Error().Msg("Unable to parse RSA key from PEM.")
 		return "", err
 	}
 
@@ -31,7 +31,7 @@ func GenerateJWT() (string, error) {
 	jwtToken, err := t.SignedString(key)
 
 	if err != nil {
-		log.Fatal().Msg("Unable to generate JWT token for Git APIs.")
+		log.Error().Msg("Unable to generate JWT token for Git APIs.")
 	}
 
 	return jwtToken, nil

@@ -43,13 +43,13 @@ func (r *cliFactory) CloneRepoWithToken(cloneURL string) error {
 func (r *cliFactory) PullChanges() error {
 	activeRepo, err := git.PlainOpen(r.pathVars.Repository)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to open local repository.")
+		log.Error().Err(err).Msg("Unable to open local repository.")
 		return err
 	}
 
 	w, err := activeRepo.Worktree()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Unable get repository's worktree.")
+		log.Error().Err(err).Msg("Unable get repository's worktree.")
 		return err
 	}
 
@@ -104,14 +104,14 @@ func (r *cliFactory) ExportArtifact() error {
 	file, err := os.Create(artifactFile)
 
 	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to create artifact file.")
+		log.Error().Err(err).Msg("Unable to create artifact file.")
 		return err
 	}
 
 	zipIO, err := utils.ZipDirectory(r.pathVars.ArtifactSource)
 
 	if err != nil {
-		log.Fatal().Err(err).Str(
+		log.Error().Err(err).Str(
 			"path", r.pathVars.ArtifactSource,
 		).Msg("Unable zip source directory")
 		return err

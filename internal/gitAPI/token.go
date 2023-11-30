@@ -21,7 +21,7 @@ func IssueAccessToken(installationID int, repositoryID int64) (string, error) {
 	jwtToken, err := token.GenerateJWT()
 
 	if err != nil {
-		log.Fatal().Msg("Unable to generate local JWT for GitHub's APIs.")
+		log.Error().Msg("Unable to generate local JWT for GitHub's APIs.")
 		return "", err
 	}
 

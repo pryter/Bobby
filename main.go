@@ -27,7 +27,7 @@ func main() {
 
 	log.Logger = zerolog.New(
 		zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC1123},
-	).Level(zerolog.TraceLevel).With().Timestamp().Caller().Logger()
+	).Level(zerolog.TraceLevel).With().Timestamp().Logger()
 
 	displayAppHeading()
 

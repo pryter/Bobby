@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build dists" type="CompoundRunConfigurationType">
+    <toRun name="build artifact-linux" type="GoApplicationRunConfiguration" />
+    <toRun name="build artifact-win" type="GoApplicationRunConfiguration" />
+    <method v="2" />
+  </configuration>
+</component>

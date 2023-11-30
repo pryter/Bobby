@@ -32,7 +32,7 @@ func RESTRequest(options GitRequestOptions, response any) error {
 	res, err := client.Do(req)
 
 	if err != nil {
-		log.Fatal().Err(err).Str(
+		log.Error().Err(err).Str(
 			"path", options.URL,
 		).Str("method", options.Method).Msg("Unable to request git api.")
 		return err
@@ -45,7 +45,7 @@ func RESTRequest(options GitRequestOptions, response any) error {
 	}()
 
 	if res.StatusCode != http.StatusCreated && res.StatusCode != http.StatusOK {
-		log.Fatal().Fields(
+		log.Error().Fields(
 			map[string]string{
 				"code":   strconv.Itoa(res.StatusCode),
 				"status": res.Status,
