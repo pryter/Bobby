@@ -2,9 +2,14 @@ package main
 
 import (
 	"Bobby/cmd"
+	"bytes"
+	_ "embed"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
+
+//go:embed bobby-notes.yaml
+var configFile []byte
 
 var Configs Config
 
@@ -22,10 +27,8 @@ type Config struct {
 
 func init() {
 
-	viper.SetConfigName("bobby-notes")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
+	err := viper.ReadConfig(bytes.NewBuffer(configFile))
 
 	if err != nil {
 		log.Panic().Err(err).Msg("Unable to find bobby-notes")
