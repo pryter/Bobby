@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-//go:embed bobby-notes.yaml
+//go:embed build-config.yaml
 var configFile []byte
 
 var Configs Config
