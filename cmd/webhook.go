@@ -1,19 +1,22 @@
-package service
+package cmd
 
 import (
 	"Bobby/internal/events"
 	"Bobby/internal/events/pushEvent"
+	"errors"
+	"fmt"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/joho/godotenv"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
-const (
-	path = "/webhooks"
-)
+type HTTPServiceConfig struct {
+	Port int    `mapstructure:"port"`
+	Path string `mapstructre:"path"`
+}
 
-func StartWebhookService() {
+func StartWebhookService(options HTTPServiceConfig) {
 	godotenv.Load()
 
 	hook, err := github.New(github.Options.Secret("bah"))
@@ -24,15 +27,15 @@ func StartWebhookService() {
 
 	pool := events.InitConcurrentPool(events.ConcurrentPoolOptions{MaxConcurrentTasks: 2})
 
-	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(options.Path, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := hook.Parse(r, github.PushEvent)
 		if err != nil {
-			if err == github.ErrEventNotFound {
-				// ok events wasn't one of the ones asked to be parsed
+			if errors.Is(err, github.ErrEventNotFound) {
+				log.Error().Err(err)
 			}
 		}
-		switch payload.(type) {
 
+		switch payload.(type) {
 		case github.PushPayload:
 			pushPayload := payload.(github.PushPayload)
 			pool.Add(func() {
@@ -41,6 +44,10 @@ func StartWebhookService() {
 		}
 	})
 
-	print("Bobby is listening for some fresh pushes.")
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	err = http.ListenAndServe(fmt.Sprintf(":%d", options.Port), nil)
+
+	if err != nil {
+		log.Fatal().Err(err)
+		return
+	}
 }

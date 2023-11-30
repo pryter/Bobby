@@ -1,0 +1,7 @@
+app_version: 0.1.1
+http_services:
+  webhook:
+    port: 4242
+    path: /webhooks
+concurrent_pool:
+  max_concurrent_tasks: 2
