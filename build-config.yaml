@@ -1,7 +1,12 @@
-app_version: 0.1.5b
+app_version: 0.1.7b
 http_services:
   webhook:
     port: 4242
     path: /webhooks
+    runtime_base_path: $EXEC_PATH/locker
+  artifacts_server:
+    port: 4243
+    path: /bucket
+    runtime_base_path: $EXEC_PATH/locker
 concurrent_pool:
   max_concurrent_tasks: 2

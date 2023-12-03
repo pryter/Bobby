@@ -18,7 +18,9 @@ func displayAppHeading() {
 	log.Info().Msg(strings.Repeat("=", lineLength))
 	padding := math.Floor(float64((lineLength - len(title)) / 2))
 	log.Info().Msgf("%s%s", strings.Repeat(" ", int(padding)), title)
-	log.Info().Msgf("%svisit https://bobby.pryter.me/ for more infos.", strings.Repeat(" ", int(padding)-1))
+	log.Info().Msgf(
+		"%svisit https://bobby.pryter.me/ for more infos.", strings.Repeat(" ", int(padding)-1),
+	)
 	log.Info().Msg(strings.Repeat("=", lineLength))
 }
 
@@ -30,6 +32,8 @@ func main() {
 	).Level(zerolog.TraceLevel).With().Timestamp().Logger()
 
 	displayAppHeading()
+
+	go cmd.StartServingArtifacts(Configs.HTTPServices.Artifacts)
 
 	log.Info().Msgf("Starting webhook api service on PORT %d", Configs.HTTPServices.Webhook.Port)
 	cmd.StartWebhookService(Configs.HTTPServices.Webhook)

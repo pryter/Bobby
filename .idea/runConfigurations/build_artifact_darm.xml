@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="build artifact-linux" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="build artifact-darm" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="Bobby" />
     <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-o $ProjectFileDir$/dist/Bobby-linux64" />
+    <go_parameters value="-o $ProjectFileDir$/dist/Bobby-darm64" />
     <envs>
-      <env name="GOOS" value="linux" />
-      <env name="GOARCH" value="amd64" />
+      <env name="GOOS" value="darwin" />
+      <env name="GOARCH" value="arm64" />
     </envs>
     <kind value="PACKAGE" />
     <package value="Bobby" />

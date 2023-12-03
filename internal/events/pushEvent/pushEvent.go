@@ -28,7 +28,11 @@ func newLogFactory(repoID int64) logFactory {
 	}
 }
 
-func WebhookPushEvent(payload github.PushPayload) {
+type WebhookPushEventOptions struct {
+	RuntimeBasePath string
+}
+
+func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOptions) {
 
 	/*
 		TODO
@@ -55,7 +59,7 @@ func WebhookPushEvent(payload github.PushPayload) {
 
 	// Initiate CLI tools
 	cli := cliFactory{
-		pathVars: SetupPathVars(repoID, PathVarSetupOptions{}),
+		pathVars: SetupPathVars(repoID, PathVarSetupOptions{RuntimeRoot: options.RuntimeBasePath}),
 		gitToken: accessToken,
 		buildEnv: SetupBuildEnvironment("node-default", BuildEnvironment{}),
 	}

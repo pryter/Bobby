@@ -1,7 +1,6 @@
 package pushEvent
 
 import (
-	"Bobby/internal/utils"
 	"fmt"
 	"path"
 	"strconv"
@@ -18,6 +17,7 @@ type LocalPathVariables struct {
 
 type PathVarSetupOptions struct {
 	BuildOutputFolder string
+	RuntimeRoot       string
 }
 
 func SetupPathVars(
@@ -25,9 +25,8 @@ func SetupPathVars(
 	options PathVarSetupOptions,
 ) LocalPathVariables {
 
-	prjRoot := utils.GetProjectRoot()
 	lockerPath := path.Join(
-		prjRoot, "locker", strconv.FormatInt(repositoryID, 10),
+		options.RuntimeRoot, strconv.FormatInt(repositoryID, 10),
 	)
 
 	repoPath := path.Join(lockerPath, "repo")
