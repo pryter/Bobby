@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"Bobby/internal/events"
-	"Bobby/internal/events/pushEvent"
+	"Bobby/internal/worker"
 	"errors"
 	"fmt"
 	"github.com/go-playground/webhooks/v6/github"
@@ -18,7 +17,7 @@ type HTTPServiceConfig struct {
 }
 
 // StartWebhookService initiates all webhook services
-func StartWebhookService(options HTTPServiceConfig) {
+func StartWebhookService(tunnel worker.PayloadTunnel, options HTTPServiceConfig) {
 
 	webhookServer := http.NewServeMux()
 	hook, err := github.New(github.Options.Secret("bah"))
@@ -27,33 +26,35 @@ func StartWebhookService(options HTTPServiceConfig) {
 		panic(err)
 	}
 
-	// create concurrent pool for concurrent build tasks
-	pool := events.InitConcurrentPool(events.ConcurrentPoolOptions{MaxConcurrentTasks: 2})
+	webhookServer.HandleFunc(
+		options.Path, func(w http.ResponseWriter, r *http.Request) {
+			payload, err := hook.Parse(r, github.PushEvent)
 
-	webhookServer.HandleFunc(options.Path, func(w http.ResponseWriter, r *http.Request) {
-		payload, err := hook.Parse(r, github.PushEvent)
+			if err != nil {
+				// event_not_found errors are negligible
+				if errors.Is(err, github.ErrEventNotFound) {
+					log.Error().Err(err)
+				}
 
-		if err != nil {
-			// event_not_found errors are negligible
-			if errors.Is(err, github.ErrEventNotFound) {
 				log.Error().Err(err)
 			}
 
-			log.Error().Err(err)
-		}
+			switch payload.(type) {
 
-		switch payload.(type) {
+			// github's push event case
+			case github.PushPayload:
+				pushPayload := payload.(github.PushPayload)
 
-		// github's push event case
-		case github.PushPayload:
-			pushPayload := payload.(github.PushPayload)
+				workerPayload := worker.WorkerPayload{
+					// Only one setup available at the moment.
+					SetupId: "ab2kd",
+					Data:    pushPayload,
+				}
 
-			// add event to pool and let ConcurrentPool handle
-			pool.Add(func() {
-				pushEvent.WebhookPushEvent(pushPayload, pushEvent.WebhookPushEventOptions{RuntimeBasePath: options.RuntimeBasePath})
-			})
-		}
-	})
+				tunnel.Tunnel <- workerPayload
+			}
+		},
+	)
 
 	err = http.ListenAndServe(fmt.Sprintf(":%d", options.Port), webhookServer)
 

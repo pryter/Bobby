@@ -2,7 +2,9 @@ package main
 
 import (
 	"Bobby/cmd"
+	"Bobby/internal/worker"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -33,9 +35,18 @@ func main() {
 
 	displayAppHeading()
 
-	go cmd.StartServingArtifacts(Configs.HTTPServices.Artifacts)
-
 	log.Info().Msgf("Starting webhook api service on PORT %d", Configs.HTTPServices.Webhook.Port)
-	cmd.StartWebhookService(Configs.HTTPServices.Webhook)
+
+	payloadTunnel := worker.CreatePayloadTunnel()
+
+	go cmd.StartWebhookService(payloadTunnel, Configs.HTTPServices.Webhook)
+
+	workernet := worker.WorkerNetwork{
+		ConnectionTable: worker.NewConnectionTable(),
+		WSUpgrader:      websocket.Upgrader{},
+	}
+
+	go payloadTunnel.StartForwardPayload(workernet)
+	cmd.StartWorkerNetwork(workernet)
 
 }
