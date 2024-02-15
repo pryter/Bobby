@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"Bobby/internal/worker"
+	"Bobby/pkg/comm"
 	"errors"
 	"fmt"
 	"github.com/go-playground/webhooks/v6/github"
@@ -45,9 +46,9 @@ func StartWebhookService(tunnel worker.PayloadTunnel, options HTTPServiceConfig)
 			case github.PushPayload:
 				pushPayload := payload.(github.PushPayload)
 
-				workerPayload := worker.WorkerPayload{
+				workerPayload := comm.WorkerPayload{
 					// Only one setup available at the moment.
-					SetupId: "ab2kd",
+					SetupId: "6a0c72c39124",
 					Data:    pushPayload,
 				}
 

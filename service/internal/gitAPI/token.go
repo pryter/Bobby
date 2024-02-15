@@ -1,7 +1,7 @@
 package gitAPI
 
 import (
-	"Bobby/internal/token"
+	"Bobby/service/internal/token"
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"net/http"

@@ -1,7 +1,9 @@
 package worker
 
 import (
+	"Bobby/pkg/comm"
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -13,9 +15,8 @@ type WorkerNetwork struct {
 	WSUpgrader      websocket.Upgrader
 }
 
-type HostCommand struct {
-	Instruction string      `json:"instruction"`
-	Payload     interface{} `json:"payload"`
+type RegisterPayload struct {
+	MacAddr string `json:"mac_addr"`
 }
 
 func createPingHandler(c *websocket.Conn, id string, duration time.Duration) chan struct{} {
@@ -43,13 +44,12 @@ func createPingHandler(c *websocket.Conn, id string, duration time.Duration) cha
 	return handler
 }
 
-func (n WorkerNetwork) onMessageReceived(id int, message []byte) {
+func (n WorkerNetwork) onMessageReceived(id int, message []byte, conn *websocket.Conn) {
 	if id != 1 {
 		return
 	}
 
-	var command HostCommand
-	err := json.Unmarshal(message, &command)
+	command, err := comm.ParseHostCommand(message)
 
 	if err != nil {
 		log.Error().Str("instruction", command.Instruction).Err(err).Msg("Unrecognised command.")
@@ -57,7 +57,20 @@ func (n WorkerNetwork) onMessageReceived(id int, message []byte) {
 	}
 
 	switch command.Instruction {
-	case "registere":
+	case "register":
+		id := uuid.New()
+		d, err := json.Marshal(comm.WorkerPayload{SetupId: id.String()})
+		if err != nil {
+			break
+		}
+
+		var payload comm.RegisterCommandPayload
+
+		err = command.ResolvePayload(&payload)
+
+		println(payload.MacAddr)
+
+		conn.WriteMessage(websocket.TextMessage, d)
 		break
 	default:
 		log.Error().Str("instruction", command.Instruction).Msg("Unrecognised command.")
@@ -74,20 +87,25 @@ func (n WorkerNetwork) HttpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debug().Msgf("Connection created from #%s", id)
-	n.ConnectionTable.Set(id, c)
+	if id != "" {
+		log.Debug().Msgf("Connection created from #%s", id)
+		n.ConnectionTable.Set(id, c)
 
-	defer close(createPingHandler(c, id, time.Second*10))
+		defer close(createPingHandler(c, id, time.Second*10))
+	}
 
 	for {
 		mid, message, err := c.ReadMessage()
 
 		if err != nil {
+			if id == "" {
+				return
+			}
 			log.Printf("Connection closed from #%s", id)
 			n.ConnectionTable.Remove(id)
 			return
 		}
 
-		n.onMessageReceived(mid, message)
+		n.onMessageReceived(mid, message, c)
 	}
 }

@@ -1,7 +1,7 @@
 package gitAPI
 
 import (
-	"Bobby/internal/utils"
+	"bobby-worker/internal/utils"
 	"github.com/joho/godotenv"
 	"path/filepath"
 	"testing"
