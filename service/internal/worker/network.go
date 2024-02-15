@@ -10,13 +10,9 @@ import (
 	"time"
 )
 
-type WorkerNetwork struct {
+type Network struct {
 	ConnectionTable ConnectionTable
 	WSUpgrader      websocket.Upgrader
-}
-
-type RegisterPayload struct {
-	MacAddr string `json:"mac_addr"`
 }
 
 func createPingHandler(c *websocket.Conn, id string, duration time.Duration) chan struct{} {
@@ -44,7 +40,7 @@ func createPingHandler(c *websocket.Conn, id string, duration time.Duration) cha
 	return handler
 }
 
-func (n WorkerNetwork) onMessageReceived(id int, message []byte, conn *websocket.Conn) {
+func (n Network) onMessageReceived(id int, message []byte, conn *websocket.Conn) {
 	if id != 1 {
 		return
 	}
@@ -77,7 +73,7 @@ func (n WorkerNetwork) onMessageReceived(id int, message []byte, conn *websocket
 	}
 }
 
-func (n WorkerNetwork) HttpHandler(w http.ResponseWriter, r *http.Request) {
+func (n Network) HttpHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("sid")
 
 	c, err := n.WSUpgrader.Upgrade(w, r, nil)

@@ -41,7 +41,7 @@ func main() {
 
 	go cmd.StartWebhookService(payloadTunnel, Configs.HTTPServices.Webhook)
 
-	workernet := worker.WorkerNetwork{
+	workernet := worker.Network{
 		ConnectionTable: worker.NewConnectionTable(),
 		WSUpgrader:      websocket.Upgrader{},
 	}

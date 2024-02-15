@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func StartWorkerNetwork(workernet worker.WorkerNetwork) {
+func StartWorkerNetwork(workernet worker.Network) {
 
 	workerServer := http.NewServeMux()
 	workerServer.HandleFunc(

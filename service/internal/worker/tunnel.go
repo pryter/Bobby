@@ -14,7 +14,7 @@ func CreatePayloadTunnel() PayloadTunnel {
 	return PayloadTunnel{Tunnel: make(chan comm.WorkerPayload)}
 }
 
-func (t PayloadTunnel) StartForwardPayload(workernet WorkerNetwork) {
+func (t PayloadTunnel) StartForwardPayload(workernet Network) {
 	for {
 		select {
 		case payload := <-t.Tunnel:

@@ -1,8 +1,8 @@
 package pushEvent
 
 import (
-	"Bobby/internal/gitAPI"
-	"Bobby/internal/utils"
+	"Bobby/pkg/gitAPI"
+	"Bobby/pkg/utils"
 	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"

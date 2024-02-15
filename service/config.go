@@ -2,7 +2,7 @@ package main
 
 import (
 	"Bobby/cmd"
-	"Bobby/internal/utils"
+	"Bobby/pkg/utils"
 	"bytes"
 	_ "embed"
 	"github.com/rs/zerolog/log"
