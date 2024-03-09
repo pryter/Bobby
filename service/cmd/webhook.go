@@ -48,7 +48,7 @@ func StartWebhookService(tunnel worker.PayloadTunnel, options HTTPServiceConfig)
 
 				workerPayload := comm.WorkerPayload{
 					// Only one setup available at the moment.
-					SetupId: "6a0c72c39124",
+					SetupId: "45959618-9466-4143-bec0-2cdfde325df1",
 					Data:    pushPayload,
 				}
 

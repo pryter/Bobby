@@ -245,9 +245,11 @@ func StartListening(config HTTPServiceConfig) bool {
 		}
 
 		println("incoming")
+
+		var workerEventPath = path.Join(config.RuntimeBasePath, "locker")
 		pushEvent.WebhookPushEvent(
 			payload.Data,
-			pushEvent.WebhookPushEventOptions{RuntimeBasePath: config.RuntimeBasePath},
+			pushEvent.WebhookPushEventOptions{RuntimeBasePath: workerEventPath},
 		)
 	}
 

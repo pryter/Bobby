@@ -36,7 +36,7 @@ func main() {
 	//go cmd.StartServingArtifacts(Configs.HTTPServices.Artifacts)
 
 	for {
-		restart := cmd.StartListening(Configs.HTTPServices.Webhook)
+		restart := cmd.StartListening(Configs.HTTPServices.Worker)
 		if !restart {
 			break
 		}

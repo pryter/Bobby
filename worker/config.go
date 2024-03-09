@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"os"
-	"path"
+	"runtime"
 	"strings"
 )
 
@@ -24,7 +24,7 @@ type ConcurrentPoolConfig struct {
 type Config struct {
 	AppVersion   string `mapstructure:"app_version"`
 	HTTPServices struct {
-		Webhook   cmd.HTTPServiceConfig `mapstructure:"webhook"`
+		Worker    cmd.HTTPServiceConfig `mapstructure:"worker"`
 		Artifacts cmd.HTTPServiceConfig `mapstructure:"artifacts_server"`
 	} `mapstructure:"http_services"`
 	ConcurrentPool ConcurrentPoolConfig `mapstructure:"concurrent_pool"`
@@ -51,17 +51,40 @@ func init() {
 		log.Panic().Err(err).Msg("Unable to unpack config file.")
 	}
 
-	var basePath string
+	var execPath string
 	if strings.Contains(os.Args[0], "/tmp/") {
-		basePath = utils.GetProjectRoot()
+		// Development
+		execPath = utils.GetProjectRoot()
 	} else {
-		e, err := os.Executable()
-		if err != nil {
-			log.Panic().Err(err).Msg("Unable to initialise production root path.")
+		//// Production
+		//e, err := os.Executable()
+		//if err != nil {
+		//	log.Panic().Err(err).Msg("Unable to initialise production root path.")
+		//}
+		//execPath = path.Dir(e)
+
+		// Platform Specific path
+
+		var appPath string
+		switch runtime.GOOS {
+		case "windows":
+			appPath = "C:\\ProgramData\\Bobby-worker"
+			break
+		case "darwin":
+			appPath = "/Library/Application Support/Bobby-worker"
+			break
+		case "linux":
+			appPath = "/var/lib/Bobby-worker"
+			break
+		default:
+			log.Panic().Err(err).Msg("Unable to identify OS.")
 		}
-		basePath = path.Dir(e)
+
+		_ = os.Mkdir(appPath, 755)
+
+		execPath = appPath
 	}
 
-	replaceVariable(&Configs.HTTPServices.Webhook.RuntimeBasePath, "$EXEC_PATH", basePath)
-	replaceVariable(&Configs.HTTPServices.Artifacts.RuntimeBasePath, "$EXEC_PATH", basePath)
+	replaceVariable(&Configs.HTTPServices.Worker.RuntimeBasePath, "$EXEC_PATH", execPath)
+	replaceVariable(&Configs.HTTPServices.Artifacts.RuntimeBasePath, "$EXEC_PATH", execPath)
 }
