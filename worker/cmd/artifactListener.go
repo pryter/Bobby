@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bobby-worker/internal/app"
 	"bobby-worker/internal/bucket"
 	"encoding/json"
 	"fmt"
@@ -31,7 +32,7 @@ func pipeFile(w http.ResponseWriter, fileBuffer []byte, filename string) {
 	}
 }
 
-func StartServingArtifacts(options HTTPServiceConfig) {
+func StartServingArtifacts(options app.HTTPServiceConfig) {
 
 	artifactServer := http.NewServeMux()
 

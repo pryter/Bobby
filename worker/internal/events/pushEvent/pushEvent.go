@@ -1,7 +1,6 @@
 package pushEvent
 
 import (
-	"bobby-worker/internal/gitAPI"
 	"errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-playground/webhooks/v6/github"
@@ -46,16 +45,16 @@ func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOption
 	*/
 
 	// Init required variables
-	installID := payload.Installation.ID
+	//installID := payload.Installation.ID
 	repoID := payload.Repository.ID
 
 	lf := newLogFactory(repoID)
 
 	// Issue github's access token
-	accessToken, _ := gitAPI.IssueAccessToken(installID, repoID)
-	checkrun := gitAPI.NewCheckRun(
-		payload.Repository.HooksURL, payload.Commits[0].ID, accessToken,
-	)
+	//accessToken, _ := gitAPI.IssueAccessToken(installID, repoID)
+	//checkrun := gitAPI.NewCheckRun(
+	//	payload.Repository.HooksURL, payload.Commits[0].ID, accessToken,
+	//)
 
 	// Initiate CLI tools
 	cli := cliFactory{
@@ -70,13 +69,13 @@ func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOption
 		if err := cli.PullChanges(); err != nil {
 			lf.NoCMD(err, "Can not pull changes from the remote.")
 
-			checkrun.Update(
-				"completed", gitAPI.ConclusionFailure,
-				gitAPI.CheckRunOutput{
-					Title:   "Repository Error",
-					Summary: "Build server can not pull latest changes from this repo.",
-				},
-			)
+			//checkrun.Update(
+			//	"completed", gitAPI.ConclusionFailure,
+			//	gitAPI.CheckRunOutput{
+			//		Title:   "Repository Error",
+			//		Summary: "Build server can not pull latest changes from this repo.",
+			//	},
+			//)
 			return
 		}
 	} else if err != nil {
@@ -90,13 +89,13 @@ func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOption
 			err, "Unable to initialise the project.", cli.buildEnv.InitCommand,
 		)
 
-		checkrun.Update(
-			"completed", gitAPI.ConclusionFailure,
-			gitAPI.CheckRunOutput{
-				Title:   "Project Error",
-				Summary: "Build server can not initialise the project.",
-			},
-		)
+		//checkrun.Update(
+		//	"completed", gitAPI.ConclusionFailure,
+		//	gitAPI.CheckRunOutput{
+		//		Title:   "Project Error",
+		//		Summary: "Build server can not initialise the project.",
+		//	},
+		//)
 		return
 	}
 
@@ -106,25 +105,25 @@ func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOption
 			err, "Unable to build the project.", cli.buildEnv.BuildCommand,
 		)
 
-		checkrun.Update(
-			"completed", gitAPI.ConclusionFailure,
-			gitAPI.CheckRunOutput{
-				Title:   "Build Error",
-				Summary: "Build server can not build the project.",
-			},
-		)
+		//checkrun.Update(
+		//	"completed", gitAPI.ConclusionFailure,
+		//	gitAPI.CheckRunOutput{
+		//		Title:   "Build Error",
+		//		Summary: "Build server can not build the project.",
+		//	},
+		//)
 		return
 	}
 
 	// Export and compress artifacts to zip file
 	cli.ExportArtifact()
 
-	checkrun.Update(
-		"completed", gitAPI.ConclusionSuccess, gitAPI.CheckRunOutput{
-			Title: "Build Success",
-			Summary: "Successfully built the changes. " +
-				"The artifact file can be access at https://bobby.pryter.me/some_artifact_uri",
-		},
-	)
+	//checkrun.Update(
+	//	"completed", gitAPI.ConclusionSuccess, gitAPI.CheckRunOutput{
+	//		Title: "Build Success",
+	//		Summary: "Successfully built the changes. " +
+	//			"The artifact file can be access at https://bobby.pryter.me/some_artifact_uri",
+	//	},
+	//)
 
 }

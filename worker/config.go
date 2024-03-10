@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bobby-worker/cmd"
-	"bobby-worker/internal/utils"
+	"Bobby/pkg/utils"
+	"bobby-worker/internal/app"
 	"bytes"
 	_ "embed"
 	"github.com/rs/zerolog/log"
@@ -24,8 +24,8 @@ type ConcurrentPoolConfig struct {
 type Config struct {
 	AppVersion   string `mapstructure:"app_version"`
 	HTTPServices struct {
-		Worker    cmd.HTTPServiceConfig `mapstructure:"worker"`
-		Artifacts cmd.HTTPServiceConfig `mapstructure:"artifacts_server"`
+		Worker    app.HTTPServiceConfig `mapstructure:"worker"`
+		Artifacts app.HTTPServiceConfig `mapstructure:"artifacts_server"`
 	} `mapstructure:"http_services"`
 	ConcurrentPool ConcurrentPoolConfig `mapstructure:"concurrent_pool"`
 }

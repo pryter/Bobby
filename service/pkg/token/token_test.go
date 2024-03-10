@@ -1,7 +1,7 @@
 package token
 
 import (
-	"Bobby/service/internal/utils"
+	"Bobby/pkg/utils"
 	"github.com/joho/godotenv"
 	"os"
 	"path/filepath"
