@@ -1,8 +1,7 @@
 package pushEvent
 
 import (
-	"Bobby/pkg/gitAPI"
-	"Bobby/pkg/utils"
+	"bobby-worker/internal/utils"
 	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
@@ -15,55 +14,71 @@ import (
 )
 
 func testEachFactory(cli cliFactory, t *testing.T) {
-	t.Run("clone-repository", func(t *testing.T) {
-		err := cli.CloneRepoWithToken("https://github.com/pryter/anri.git")
-		if !errors.Is(err, git.ErrRepositoryAlreadyExists) && err != nil {
-			t.Error(err)
-		}
-	})
+	t.Run(
+		"clone-repository", func(t *testing.T) {
+			err := cli.CloneRepoWithToken("git@github.com:pryter/anri.git")
+			if !errors.Is(err, git.ErrRepositoryAlreadyExists) && err != nil {
+				t.Error(err)
+			}
+		},
+	)
 
-	t.Run("pull-repository", func(t *testing.T) {
-		err := cli.PullChanges()
-		if err != nil {
-			t.Error(err)
-		}
-	})
+	t.Run(
+		"pull-repository", func(t *testing.T) {
+			err := cli.PullChanges()
+			if err != nil {
+				t.Error(err)
+			}
+		},
+	)
 
-	t.Run("init-project", func(t *testing.T) {
-		err := cli.InitProject()
+	t.Run(
+		"init-project", func(t *testing.T) {
+			err := cli.InitProject()
 
-		if err != nil {
-			t.Error(err)
-		}
-	})
+			if err != nil {
+				t.Error(err)
+			}
+		},
+	)
 
-	t.Run("build-project", func(t *testing.T) {
-		err := cli.Build()
+	t.Run(
+		"build-project", func(t *testing.T) {
+			err := cli.Build()
 
-		if err != nil {
-			t.Error(err)
-		}
-	})
+			if err != nil {
+				t.Error(err)
+			}
+		},
+	)
 
-	t.Run("export-artifact", func(t *testing.T) {
-		err := cli.ExportArtifact()
+	t.Run(
+		"export-artifact", func(t *testing.T) {
+			err := cli.ExportArtifact()
 
-		if err != nil {
-			t.Error(err)
-		}
-	})
+			if err != nil {
+				t.Error(err)
+			}
+		},
+	)
 }
 
 func TestEnvironmentSetup(t *testing.T) {
-	t.Run("setup-path-variables", func(t *testing.T) {
-		ROOT := utils.GetProjectRoot()
-		testSetupPathVarsWithOpts(ROOT, PathVarSetupOptions{}, t)
-	})
+	t.Run(
+		"setup-path-variables", func(t *testing.T) {
+			ROOT := utils.GetProjectRoot()
+			testSetupPathVarsWithOpts(ROOT, PathVarSetupOptions{}, t)
+		},
+	)
 
-	t.Run("setup-path-variables-with-options", func(t *testing.T) {
-		ROOT := utils.GetProjectRoot()
-		testSetupPathVarsWithOpts(ROOT, PathVarSetupOptions{BuildOutputFolder: "somethingelse"}, t)
-	})
+	t.Run(
+		"setup-path-variables-with-options", func(t *testing.T) {
+			ROOT := utils.GetProjectRoot()
+			testSetupPathVarsWithOpts(
+				ROOT, PathVarSetupOptions{BuildOutputFolder: "somethingelse"}, t,
+			)
+		},
+	)
 }
 
 func TestCliFactory(t *testing.T) {
@@ -74,20 +89,21 @@ func TestCliFactory(t *testing.T) {
 		return
 	}
 
-	accessToken, _ := gitAPI.IssueAccessToken(44151598, 571145096)
-
 	var clis []cliFactory
 
-	clis = append(clis, cliFactory{
-		pathVars: SetupPathVars(571145096, PathVarSetupOptions{}),
-		gitToken: accessToken,
-		buildEnv: SetupBuildEnvironment("node-default", BuildEnvironment{}),
-	})
+	clis = append(
+		clis, cliFactory{
+			pathVars: SetupPathVars(571145096, PathVarSetupOptions{}),
+			buildEnv: SetupBuildEnvironment("node-default", BuildEnvironment{}),
+		},
+	)
 
 	for _, s := range clis {
-		t.Run(fmt.Sprintf("env-type-%s", s.buildEnv.EnvType), func(st *testing.T) {
-			testEachFactory(s, st)
-		})
+		t.Run(
+			fmt.Sprintf("env-type-%s", s.buildEnv.EnvType), func(st *testing.T) {
+				testEachFactory(s, st)
+			},
+		)
 	}
 
 }
@@ -102,8 +118,14 @@ func testSetupPathVarsWithOpts(ROOT string, option PathVarSetupOptions, t *testi
 		outputFolder = option.BuildOutputFolder
 	}
 
-	a.Equal(pathVars.ArtifactOut, path.Join(ROOT, "locker/1234567/artifacts"), "Path ArtifactOut Mismatch")
-	a.Equal(pathVars.ArtifactSource, path.Join(ROOT, "locker/1234567/repo/", outputFolder), "Path ArtifactSource Mismatch")
+	a.Equal(
+		pathVars.ArtifactOut, path.Join(ROOT, "locker/1234567/artifacts"),
+		"Path ArtifactOut Mismatch",
+	)
+	a.Equal(
+		pathVars.ArtifactSource, path.Join(ROOT, "locker/1234567/repo/", outputFolder),
+		"Path ArtifactSource Mismatch",
+	)
 	a.Equal(pathVars.Locker, path.Join(ROOT, "locker/1234567"), "Path Locker Mismatch")
 	a.Equal(pathVars.Repository, path.Join(ROOT, "locker/1234567/repo"), "Path Repo Mismatch")
 }
@@ -178,6 +200,6 @@ func TestWebhookPushEvent(t *testing.T) {
 		Commits:      commits,
 	}
 
-	WebhookPushEvent(payload)
+	WebhookPushEvent(payload, WebhookPushEventOptions{})
 
 }

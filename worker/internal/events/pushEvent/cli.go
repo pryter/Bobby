@@ -23,9 +23,7 @@ type cliFactory struct {
 // CloneRepoWithToken clones a given repo to cli's local machine.
 func (r *cliFactory) CloneRepoWithToken(cloneURL string) error {
 
-	println(cloneURL)
-
-	auth, err := ssh.NewSSHAgentAuth("git")
+	auth, err := ssh.DefaultAuthBuilder("git")
 
 	_, err = git.PlainClone(
 		r.pathVars.Repository, false, &git.CloneOptions{

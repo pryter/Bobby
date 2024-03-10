@@ -1,6 +1,6 @@
 app_version: 0.1.7b
 http_services:
-  webhook:
+  worker:
     port: 4242
     path: /webhooks
     runtime_base_path: $EXEC_PATH
