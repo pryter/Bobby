@@ -6,8 +6,7 @@ import (
 	"strconv"
 )
 
-// Setup path variables
-
+// LocalPathVariables Setup path variables
 type LocalPathVariables struct {
 	Locker         string
 	Repository     string

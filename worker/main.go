@@ -15,13 +15,14 @@ import (
 func displayAppHeading() {
 	title := fmt.Sprintf("Bobby artifact builder (dist version %s)", Configs.AppVersion)
 	lineLength := 56
-	log.Info().Msg(strings.Repeat("=", lineLength))
+	fmt.Println(strings.Repeat("=", lineLength))
 	padding := math.Floor(float64((lineLength - len(title)) / 2))
-	log.Info().Msgf("%s%s", strings.Repeat(" ", int(padding)), title)
-	log.Info().Msgf(
-		"%svisit https://bobby.pryter.me/ for more infos.", strings.Repeat(" ", int(padding)-1),
+	fmt.Printf("%s%s\n", strings.Repeat(" ", int(padding)), title)
+	fmt.Printf(
+		"%svisit https://bobby.pryter.me/ for more infos.\n", strings.Repeat(" ", int(padding)-1),
 	)
-	log.Info().Msg(strings.Repeat("=", lineLength))
+	fmt.Println(strings.Repeat("=", lineLength))
+	fmt.Print("\n")
 }
 
 func main() {

@@ -15,7 +15,9 @@ import (
 
 func StartListening(config app.HTTPServiceConfig) bool {
 
-	data, err := os.ReadFile(path.Join(config.RuntimeBasePath, "network-credentials.json"))
+	var RT app.ResourceTree = app.NewResourceTree(config.RuntimeBasePath)
+	// Check network-credential
+	data, err := RT.Configs.NetworkConfigFile.Open()
 
 	if err != nil {
 		ok := app.NetworkSetup(config)

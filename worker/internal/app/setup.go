@@ -28,7 +28,7 @@ type HTTPServiceConfig struct {
 }
 
 func NetworkSetup(config HTTPServiceConfig) bool {
-	screen.Clear()
+	//screen.Clear()
 	prompt := promptui.Select{
 		Label: "Select setup mode.",
 		Items: []string{"Automatic (recommend)", "Manual"},
