@@ -1,12 +1,15 @@
 package worker
 
 import (
+	"Bobby/internal/app"
 	"Bobby/pkg/comm"
-	"encoding/json"
-	"github.com/google/uuid"
+	"Bobby/pkg/crypto"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"os"
+	"path"
+	"strings"
 	"time"
 )
 
@@ -54,19 +57,7 @@ func (n Network) onMessageReceived(id int, message []byte, conn *websocket.Conn)
 
 	switch command.Instruction {
 	case "register":
-		id := uuid.New()
-		d, err := json.Marshal(comm.WorkerPayload{SetupId: id.String()})
-		if err != nil {
-			break
-		}
-
-		var payload comm.RegisterCommandPayload
-
-		err = command.ResolvePayload(&payload)
-
-		println(payload.MacAddr)
-
-		conn.WriteMessage(websocket.TextMessage, d)
+		registerAction(conn, command)
 		break
 	default:
 		log.Error().Str("instruction", command.Instruction).Msg("Unrecognised command.")
@@ -84,6 +75,49 @@ func (n Network) HttpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if id != "" {
+
+		challenge := r.URL.Query().Get("challenge")
+
+		if challenge == "" {
+			c.Close()
+			return
+		}
+
+		// Check
+		workerDataPath := app.GetResources().WorkerData.GetAbsolutePath()
+		workerFolder := path.Join(workerDataPath, id)
+		keyPath := path.Join(workerFolder, "key")
+		secretPath := path.Join(workerFolder, "secret")
+
+		key, err := os.ReadFile(keyPath)
+		if err != nil {
+			c.Close()
+			return
+		}
+		secret, err := os.ReadFile(secretPath)
+		if err != nil {
+			c.Close()
+			return
+		}
+
+		decrypted, err := crypto.RSADecrypt(challenge, key)
+		if err != nil {
+			c.Close()
+			return
+		}
+
+		slice := strings.Split(decrypted, "|")
+
+		if slice[1] != id {
+			c.Close()
+			return
+		}
+
+		if slice[0] != string(secret) {
+			c.Close()
+			return
+		}
+
 		log.Debug().Msgf("Connection created from #%s", id)
 		n.ConnectionTable.Set(id, c)
 

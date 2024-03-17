@@ -1,7 +1,6 @@
 package hostAPI
 
 import (
-	"bobby-worker/internal/events/pushEvent"
 	"encoding/json"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/gorilla/websocket"
@@ -38,10 +37,5 @@ func (t *HostAPI) awaitForResponse(key string) {
 
 		println("incoming")
 
-		var workerEventPath = ""
-		pushEvent.WebhookPushEvent(
-			payload.Data,
-			pushEvent.WebhookPushEventOptions{RuntimeBasePath: workerEventPath},
-		)
 	}
 }

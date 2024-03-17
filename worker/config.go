@@ -2,12 +2,13 @@ package main
 
 import (
 	"Bobby/pkg/utils"
-	"bobby-worker/internal/app"
+	"bobby-worker/cmd"
 	"bytes"
 	_ "embed"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 )
@@ -22,10 +23,11 @@ type ConcurrentPoolConfig struct {
 }
 
 type Config struct {
-	AppVersion   string `mapstructure:"app_version"`
-	HTTPServices struct {
-		Worker    app.HTTPServiceConfig `mapstructure:"worker"`
-		Artifacts app.HTTPServiceConfig `mapstructure:"artifacts_server"`
+	AppVersion      string `mapstructure:"app_version"`
+	AppResourcePath string `mapstructure:"app_resource_path"`
+	HTTPServices    struct {
+		Worker    cmd.WorkerServiceOptions   `mapstructure:"worker"`
+		Artifacts cmd.ArtifactServiceOptions `mapstructure:"artifacts_server"`
 	} `mapstructure:"http_services"`
 	ConcurrentPool ConcurrentPoolConfig `mapstructure:"concurrent_pool"`
 }
@@ -54,17 +56,10 @@ func init() {
 	var execPath string
 	if strings.Contains(os.Args[0], "/tmp/") {
 		// Development
-		execPath = utils.GetProjectRoot()
+		execPath = path.Join(utils.GetProjectRoot(), "resources/Bobby-worker")
+		_ = os.Mkdir(execPath, 0777)
 	} else {
 		//// Production
-		//e, err := os.Executable()
-		//if err != nil {
-		//	log.Panic().Err(err).Msg("Unable to initialise production root path.")
-		//}
-		//execPath = path.Dir(e)
-
-		// Platform Specific path
-
 		var appPath string
 		switch runtime.GOOS {
 		case "windows":
@@ -80,11 +75,12 @@ func init() {
 			log.Panic().Err(err).Msg("Unable to identify OS.")
 		}
 
-		_ = os.Mkdir(appPath, 755)
+		_ = os.Mkdir(appPath, 0777)
 
 		execPath = appPath
 	}
 
-	replaceVariable(&Configs.HTTPServices.Worker.RuntimeBasePath, "$EXEC_PATH", execPath)
-	replaceVariable(&Configs.HTTPServices.Artifacts.RuntimeBasePath, "$EXEC_PATH", execPath)
+	replaceVariable(&Configs.AppResourcePath, "$RESOURCE_PATH", execPath)
+	replaceVariable(&Configs.HTTPServices.Worker.ServiceBasePath, "$RESOURCE_PATH", execPath)
+	replaceVariable(&Configs.HTTPServices.Artifacts.RuntimeBasePath, "$RESOURCE_PATH", execPath)
 }

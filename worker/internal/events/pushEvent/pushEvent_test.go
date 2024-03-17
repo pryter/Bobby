@@ -65,14 +65,14 @@ func testEachFactory(cli cliFactory, t *testing.T) {
 
 func TestEnvironmentSetup(t *testing.T) {
 	t.Run(
-		"setup-path-variables", func(t *testing.T) {
+		"network-path-variables", func(t *testing.T) {
 			ROOT := utils.GetProjectRoot()
 			testSetupPathVarsWithOpts(ROOT, PathVarSetupOptions{}, t)
 		},
 	)
 
 	t.Run(
-		"setup-path-variables-with-options", func(t *testing.T) {
+		"network-path-variables-with-options", func(t *testing.T) {
 			ROOT := utils.GetProjectRoot()
 			testSetupPathVarsWithOpts(
 				ROOT, PathVarSetupOptions{BuildOutputFolder: "somethingelse"}, t,

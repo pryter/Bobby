@@ -14,5 +14,6 @@ func GetMacAddr() ([]string, error) {
 			as = append(as, a)
 		}
 	}
+
 	return as, nil
 }

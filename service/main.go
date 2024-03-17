@@ -2,6 +2,7 @@ package main
 
 import (
 	"Bobby/cmd"
+	"Bobby/internal/app"
 	"Bobby/internal/worker"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -37,8 +38,12 @@ func main() {
 
 	log.Info().Msgf("Starting webhook api service on PORT %d", Configs.HTTPServices.Webhook.Port)
 
+	app.InitResourceTree(Configs.AppResourcePath)
+
+	// Create payload tunnel between worker network and webhook listener
 	payloadTunnel := worker.CreatePayloadTunnel()
 
+	// Start listening for webhook request (REST)
 	go cmd.StartWebhookService(payloadTunnel, Configs.HTTPServices.Webhook)
 
 	workernet := worker.Network{
@@ -46,7 +51,10 @@ func main() {
 		WSUpgrader:      websocket.Upgrader{},
 	}
 
+	// Start payload forwarder
 	go payloadTunnel.StartForwardPayload(workernet)
+
+	// Start worker network (main service)
 	cmd.StartWorkerNetwork(workernet)
 
 }

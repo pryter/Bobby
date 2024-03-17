@@ -1,6 +1,7 @@
 package pushEvent
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-playground/webhooks/v6/github"
@@ -31,7 +32,7 @@ type WebhookPushEventOptions struct {
 	RuntimeBasePath string
 }
 
-func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOptions) {
+func WebhookPushEvent(rawPayload json.RawMessage, options WebhookPushEventOptions) {
 
 	/*
 		TODO
@@ -43,6 +44,12 @@ func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOption
 		[ ] log tunnel
 		[ ] error handling
 	*/
+
+	var payload github.PushPayload
+	err := json.Unmarshal(rawPayload, &payload)
+	if err != nil {
+
+	}
 
 	// Init required variables
 	//installID := payload.Installation.ID
@@ -63,7 +70,7 @@ func WebhookPushEvent(payload github.PushPayload, options WebhookPushEventOption
 	}
 
 	// Clone or pull repository from remote source
-	err := cli.CloneRepoWithToken(payload.Repository.SSHURL)
+	err = cli.CloneRepoWithToken(payload.Repository.SSHURL)
 
 	if errors.Is(err, git.ErrRepositoryAlreadyExists) {
 		if err := cli.PullChanges(); err != nil {

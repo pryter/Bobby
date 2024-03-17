@@ -2,3 +2,4 @@ locker
 .env
 
 /dist/
+/resources/

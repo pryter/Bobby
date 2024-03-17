@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 )
 
@@ -22,8 +23,9 @@ type ConcurrentPoolConfig struct {
 }
 
 type Config struct {
-	AppVersion   string `mapstructure:"app_version"`
-	HTTPServices struct {
+	AppVersion      string `mapstructure:"app_version"`
+	AppResourcePath string `mapstructure:"app_resource_path"`
+	HTTPServices    struct {
 		Webhook   cmd.HTTPServiceConfig `mapstructure:"webhook"`
 		Artifacts cmd.HTTPServiceConfig `mapstructure:"artifacts_server"`
 	} `mapstructure:"http_services"`
@@ -51,17 +53,34 @@ func init() {
 		log.Panic().Err(err).Msg("Unable to unpack config file.")
 	}
 
-	var basePath string
+	var execPath string
 	if strings.Contains(os.Args[0], "/tmp/") {
-		basePath = utils.GetProjectRoot()
+		// Development
+		execPath = path.Join(utils.GetProjectRoot(), "resources/Bobby")
+		_ = os.Mkdir(execPath, 0777)
 	} else {
-		e, err := os.Executable()
-		if err != nil {
-			log.Panic().Err(err).Msg("Unable to initialise production root path.")
+		//// Production
+		var appPath string
+		switch runtime.GOOS {
+		case "windows":
+			appPath = "C:\\ProgramData\\Bobby"
+			break
+		case "darwin":
+			appPath = "/Library/Application Support/Bobby"
+			break
+		case "linux":
+			appPath = "/var/lib/Bobby"
+			break
+		default:
+			log.Panic().Err(err).Msg("Unable to identify OS.")
 		}
-		basePath = path.Dir(e)
+
+		_ = os.Mkdir(appPath, 0777)
+
+		execPath = appPath
 	}
 
-	replaceVariable(&Configs.HTTPServices.Webhook.RuntimeBasePath, "$EXEC_PATH", basePath)
-	replaceVariable(&Configs.HTTPServices.Artifacts.RuntimeBasePath, "$EXEC_PATH", basePath)
+	replaceVariable(&Configs.AppResourcePath, "$RESOURCE_PATH", execPath)
+	replaceVariable(&Configs.HTTPServices.Webhook.RuntimeBasePath, "$RESOURCE_PATH", execPath)
+	replaceVariable(&Configs.HTTPServices.Artifacts.RuntimeBasePath, "$RESOURCE_PATH", execPath)
 }

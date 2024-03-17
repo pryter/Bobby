@@ -2,6 +2,7 @@ package main
 
 import (
 	"bobby-worker/cmd"
+	"bobby-worker/internal/app/resources"
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
@@ -34,10 +35,13 @@ func main() {
 
 	displayAppHeading()
 
+	// init resourceTree
+	resources.InitResourceTree(Configs.AppResourcePath)
+
 	//go cmd.StartServingArtifacts(Configs.HTTPServices.Artifacts)
 
 	for {
-		restart := cmd.StartListening(Configs.HTTPServices.Worker)
+		restart := cmd.StartWorkerService(Configs.HTTPServices.Worker)
 		if !restart {
 			break
 		}

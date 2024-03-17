@@ -7,11 +7,11 @@ import (
 )
 
 type PayloadTunnel struct {
-	Tunnel chan comm.WorkerPayload
+	Tunnel chan comm.WorkerPayload[any]
 }
 
 func CreatePayloadTunnel() PayloadTunnel {
-	return PayloadTunnel{Tunnel: make(chan comm.WorkerPayload)}
+	return PayloadTunnel{Tunnel: make(chan comm.WorkerPayload[any])}
 }
 
 func (t PayloadTunnel) StartForwardPayload(workernet Network) {

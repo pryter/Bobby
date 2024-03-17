@@ -11,8 +11,16 @@ type Folder struct {
 	ResourcePath string
 }
 
+func (f Folder) GetAbsolutePath() string {
+	return path.Join(f.ResourcePath, f.Name)
+}
+
 func (f Folder) MapFile(name string) File {
-	return File{Filename: name, AbsolutePath: path.Join(f.ResourcePath, f.Name)}
+	return File{Filename: name, AbsolutePath: path.Join(f.GetAbsolutePath(), name)}
+}
+
+func (f Folder) CreateIfNotExist() {
+	_ = os.Mkdir(f.GetAbsolutePath(), 0777)
 }
 
 type File struct {
@@ -21,6 +29,6 @@ type File struct {
 }
 
 func (r File) Open() ([]byte, error) {
-	fullPath := path.Join(r.AbsolutePath, r.Filename)
+	fullPath := r.AbsolutePath
 	return os.ReadFile(fullPath)
 }

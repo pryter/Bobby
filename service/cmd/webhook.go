@@ -41,15 +41,15 @@ func StartWebhookService(tunnel worker.PayloadTunnel, options HTTPServiceConfig)
 			}
 
 			switch payload.(type) {
-
 			// github's push event case
 			case github.PushPayload:
 				pushPayload := payload.(github.PushPayload)
 
-				workerPayload := comm.WorkerPayload{
-					// Only one setup available at the moment.
-					SetupId: "45959618-9466-4143-bec0-2cdfde325df1",
+				workerPayload := comm.WorkerPayload[any]{
+					// Only one network available at the moment.
+					SetupId: "c55a9dbd-5d51-404c-b3db-4c14bac7689e",
 					Data:    pushPayload,
+					Action:  "push",
 				}
 
 				tunnel.Tunnel <- workerPayload
