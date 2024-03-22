@@ -1,6 +1,7 @@
 package pushEvent
 
 import (
+	"bobby-worker/internal/cli"
 	"encoding/json"
 	"errors"
 	"github.com/go-git/go-git/v5"
@@ -64,16 +65,16 @@ func WebhookPushEvent(rawPayload json.RawMessage, options WebhookPushEventOption
 	//)
 
 	// Initiate CLI tools
-	cli := cliFactory{
-		pathVars: SetupPathVars(repoID, PathVarSetupOptions{RuntimeRoot: options.RuntimeBasePath}),
-		buildEnv: SetupBuildEnvironment("node-default", BuildEnvironment{}),
+	cliTool := cli.CliFactory{
+		PathVars: SetupPathVars(repoID, PathVarSetupOptions{RuntimeRoot: options.RuntimeBasePath}),
+		BuildEnv: SetupBuildEnvironment("node-default", BuildEnvironment{}),
 	}
 
 	// Clone or pull repository from remote source
-	err = cli.CloneRepoWithToken(payload.Repository.SSHURL)
+	err = cliTool.CloneRepoWithToken(payload.Repository.SSHURL)
 
 	if errors.Is(err, git.ErrRepositoryAlreadyExists) {
-		if err := cli.PullChanges(); err != nil {
+		if err := cliTool.PullChanges(); err != nil {
 			lf.NoCMD(err, "Can not pull changes from the remote.")
 
 			//checkrun.Update(
@@ -91,9 +92,9 @@ func WebhookPushEvent(rawPayload json.RawMessage, options WebhookPushEventOption
 
 	// Project workflow
 	// init project
-	if err := cli.InitProject(); err != nil {
+	if err := cliTool.InitProject(); err != nil {
 		lf.CMD(
-			err, "Unable to initialise the project.", cli.buildEnv.InitCommand,
+			err, "Unable to initialise the project.", cliTool.BuildEnv.InitCommand,
 		)
 
 		//checkrun.Update(
@@ -107,9 +108,9 @@ func WebhookPushEvent(rawPayload json.RawMessage, options WebhookPushEventOption
 	}
 
 	// build project
-	if err := cli.Build(); err != nil {
+	if err := cliTool.Build(); err != nil {
 		lf.CMD(
-			err, "Unable to build the project.", cli.buildEnv.BuildCommand,
+			err, "Unable to build the project.", cliTool.BuildEnv.BuildCommand,
 		)
 
 		//checkrun.Update(
@@ -123,7 +124,7 @@ func WebhookPushEvent(rawPayload json.RawMessage, options WebhookPushEventOption
 	}
 
 	// Export and compress artifacts to zip file
-	cli.ExportArtifact()
+	cliTool.ExportArtifact()
 
 	//checkrun.Update(
 	//	"completed", gitAPI.ConclusionSuccess, gitAPI.CheckRunOutput{

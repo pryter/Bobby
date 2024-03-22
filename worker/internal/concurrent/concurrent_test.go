@@ -1,4 +1,4 @@
-package events
+package concurrent
 
 import (
 	"encoding/base64"
@@ -24,21 +24,31 @@ func testEvent(length time.Duration) {
 
 func TestConcurrentPool(t *testing.T) {
 	pool := InitConcurrentPool(ConcurrentPoolOptions{MaxConcurrentTasks: 3})
-	pool.Add(func() {
-		testEvent(10)
-	})
-	pool.Add(func() {
-		testEvent(10)
-	})
-	pool.Add(func() {
-		testEvent(10)
-	})
-	pool.Add(func() {
-		testEvent(10)
-	})
-	pool.Add(func() {
-		testEvent(10)
-	})
+	pool.Add(
+		func() {
+			testEvent(10)
+		},
+	)
+	pool.Add(
+		func() {
+			testEvent(10)
+		},
+	)
+	pool.Add(
+		func() {
+			testEvent(10)
+		},
+	)
+	pool.Add(
+		func() {
+			testEvent(10)
+		},
+	)
+	pool.Add(
+		func() {
+			testEvent(10)
+		},
+	)
 
 	for true {
 	}

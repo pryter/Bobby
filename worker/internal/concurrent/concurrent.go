@@ -1,4 +1,4 @@
-package events
+package concurrent
 
 import (
 	"encoding/base64"

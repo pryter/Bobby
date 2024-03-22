@@ -2,14 +2,12 @@ package worker
 
 import (
 	"Bobby/internal/app"
+	"Bobby/pkg/challenge"
 	"Bobby/pkg/comm"
-	"Bobby/pkg/crypto"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 	"net/http"
-	"os"
 	"path"
-	"strings"
 	"time"
 )
 
@@ -43,6 +41,14 @@ func createPingHandler(c *websocket.Conn, id string, duration time.Duration) cha
 	return handler
 }
 
+func closeWithMessage(c *websocket.Conn, message string) {
+	cm := websocket.FormatCloseMessage(
+		1000, message,
+	)
+	c.WriteMessage(8, cm)
+	c.Close()
+}
+
 func (n Network) onMessageReceived(id int, message []byte, conn *websocket.Conn) {
 	if id != 1 {
 		return
@@ -74,47 +80,30 @@ func (n Network) HttpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// For registered clients
 	if id != "" {
 
-		challenge := r.URL.Query().Get("challenge")
+		challengeString := r.URL.Query().Get("challenge")
 
-		if challenge == "" {
-			c.Close()
+		if challengeString == "" {
+			closeWithMessage(c, "the connection must contains a valid challenge")
 			return
 		}
 
-		// Check
+		// Solve the connection challenge
 		workerDataPath := app.GetResources().WorkerData.GetAbsolutePath()
 		workerFolder := path.Join(workerDataPath, id)
-		keyPath := path.Join(workerFolder, "key")
-		secretPath := path.Join(workerFolder, "secret")
-
-		key, err := os.ReadFile(keyPath)
-		if err != nil {
-			c.Close()
-			return
-		}
-		secret, err := os.ReadFile(secretPath)
-		if err != nil {
-			c.Close()
-			return
+		challengeSolver := challenge.Solver{
+			SetupID:        id,
+			PrivateKeyPath: path.Join(workerFolder, "key"),
+			SecretPath:     path.Join(workerFolder, "secret"),
 		}
 
-		decrypted, err := crypto.RSADecrypt(challenge, key)
-		if err != nil {
-			c.Close()
-			return
-		}
+		ok, err := challengeSolver.Solve(challengeString)
 
-		slice := strings.Split(decrypted, "|")
-
-		if slice[1] != id {
-			c.Close()
-			return
-		}
-
-		if slice[0] != string(secret) {
-			c.Close()
+		// Reject connection if received invalid challenge
+		if !ok || err != nil {
+			closeWithMessage(c, "unable to solve the given challenge")
 			return
 		}
 
@@ -125,12 +114,23 @@ func (n Network) HttpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for {
+		// Set timeout for
+		if id == "" {
+			time.AfterFunc(
+				time.Minute*2, func() {
+					closeWithMessage(c, "connection timeout")
+				},
+			)
+		}
+
 		mid, message, err := c.ReadMessage()
 
 		if err != nil {
+			// Ignore connection err from unregistered connections
 			if id == "" {
 				return
 			}
+
 			log.Printf("Connection closed from #%s", id)
 			n.ConnectionTable.Remove(id)
 			return

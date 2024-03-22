@@ -2,6 +2,8 @@ package pushEvent
 
 import (
 	"Bobby/pkg/utils"
+	"bobby-worker/internal/cli"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
@@ -13,7 +15,7 @@ import (
 	"testing"
 )
 
-func testEachFactory(cli cliFactory, t *testing.T) {
+func testEachFactory(cli cli.CliFactory, t *testing.T) {
 	t.Run(
 		"clone-repository", func(t *testing.T) {
 			err := cli.CloneRepoWithToken("git@github.com:pryter/anri.git")
@@ -89,18 +91,18 @@ func TestCliFactory(t *testing.T) {
 		return
 	}
 
-	var clis []cliFactory
+	var clis []cli.CliFactory
 
 	clis = append(
-		clis, cliFactory{
-			pathVars: SetupPathVars(571145096, PathVarSetupOptions{}),
-			buildEnv: SetupBuildEnvironment("node-default", BuildEnvironment{}),
+		clis, cli.CliFactory{
+			PathVars: SetupPathVars(571145096, PathVarSetupOptions{}),
+			BuildEnv: SetupBuildEnvironment("node-default", BuildEnvironment{}),
 		},
 	)
 
 	for _, s := range clis {
 		t.Run(
-			fmt.Sprintf("env-type-%s", s.buildEnv.EnvType), func(st *testing.T) {
+			fmt.Sprintf("env-type-%s", s.BuildEnv.EnvType), func(st *testing.T) {
 				testEachFactory(s, st)
 			},
 		)
@@ -193,13 +195,6 @@ func TestWebhookPushEvent(t *testing.T) {
 	commit := Commit{ID: "72a2d245818eec4471816aee9ad4e01dca5d3aa2"}
 	commits = append(commits, commit)
 
-	payload := github.PushPayload{
-		Ref:          "testRef",
-		Repository:   repository,
-		Installation: installation,
-		Commits:      commits,
-	}
-
-	WebhookPushEvent(payload, WebhookPushEventOptions{})
+	WebhookPushEvent(json.RawMessage{}, WebhookPushEventOptions{})
 
 }
