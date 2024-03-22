@@ -1,18 +1,12 @@
 package pushEvent
 
 import (
-	"fmt"
+	"bobby-worker/internal/cli"
 	"path"
 	"strconv"
 )
 
 // LocalPathVariables Setup path variables
-type LocalPathVariables struct {
-	Locker         string
-	Repository     string
-	ArtifactSource string
-	ArtifactOut    string
-}
 
 type PathVarSetupOptions struct {
 	BuildOutputFolder string
@@ -22,7 +16,7 @@ type PathVarSetupOptions struct {
 func SetupPathVars(
 	repositoryID int64,
 	options PathVarSetupOptions,
-) LocalPathVariables {
+) cli.LocalPathVariables {
 
 	lockerPath := path.Join(
 		options.RuntimeRoot, strconv.FormatInt(repositoryID, 10),
@@ -37,7 +31,7 @@ func SetupPathVars(
 		artifactSource = path.Join(repoPath, options.BuildOutputFolder)
 	}
 
-	return LocalPathVariables{
+	return cli.LocalPathVariables{
 		Locker:         lockerPath,
 		Repository:     repoPath,
 		ArtifactOut:    artifactsOutPath,
@@ -47,39 +41,18 @@ func SetupPathVars(
 
 // Setup build environments
 
-type EnvironmentType string
-
-const (
-	EnvNode EnvironmentType = "node"
-)
-
-type ExecutableCommand struct {
-	Name string
-	Args string
-}
-
-func (r ExecutableCommand) flattened() string {
-	return fmt.Sprintf("%s %s", r.Name, r.Args)
-}
-
-type BuildEnvironment struct {
-	InitCommand  ExecutableCommand
-	BuildCommand ExecutableCommand
-	EnvType      EnvironmentType
-}
-
 func SetupBuildEnvironment(
 	preset string,
-	options BuildEnvironment,
-) BuildEnvironment {
+	options cli.BuildEnvironment,
+) cli.BuildEnvironment {
 	switch preset {
 	case "node-default":
-		return BuildEnvironment{
-			InitCommand:  ExecutableCommand{"yarn", ""},
-			BuildCommand: ExecutableCommand{"yarn", "build"},
-			EnvType:      EnvNode,
+		return cli.BuildEnvironment{
+			InitCommand:  cli.ExecutableCommand{"yarn", ""},
+			BuildCommand: cli.ExecutableCommand{"yarn", "build"},
+			EnvType:      cli.EnvNode,
 		}
 	}
 
-	return BuildEnvironment{}
+	return cli.BuildEnvironment{}
 }

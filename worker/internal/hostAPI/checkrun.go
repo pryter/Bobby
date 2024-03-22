@@ -2,50 +2,98 @@ package hostAPI
 
 import (
 	"Bobby/pkg/comm"
+	"encoding/json"
+	"errors"
 	"github.com/gorilla/websocket"
+	"time"
 )
 
 // CheckRunAPI extends HostAPI
 type CheckRunAPI struct {
-	Url string
+	Url       string
+	RepoId    int64
+	InstallId int
 	HostAPI
 }
 
 func NewCheckRunAPI(
 	conn *websocket.Conn,
-	body CheckRunBody,
+	body comm.CheckRunBody,
 	hooksUrl string,
-	headID string,
-) *CheckRunAPI {
+	repoId int64,
+	installId int,
+) (*CheckRunAPI, error) {
 
-	type NewCheckRunPayload struct {
-		Body     CheckRunBody
-		HooksUrl string
-		HeadID   string
-	}
-
-	hostCommand := comm.HostCommand[NewCheckRunPayload]{
+	hostCommand := comm.HostCommand[comm.NewCheckRunCommandPayload]{
 		Instruction: "new-checkrun-api",
-		Payload: NewCheckRunPayload{
-			Body:     body,
-			HooksUrl: hooksUrl,
-			HeadID:   headID,
+		Payload: comm.NewCheckRunCommandPayload{
+			Body:         body,
+			HooksUrl:     hooksUrl,
+			RepositoryId: repoId,
+			InstallId:    installId,
 		},
 	}
 
-	conn.WriteMessage(1, hostCommand.Digest())
+	hostApi := HostAPI{conn: conn, timeout: time.Minute}
 
-	return &CheckRunAPI{}
+	response, err := hostApi.SendCommand(&hostCommand)
+	if err != nil {
+		return nil, err
+	}
+
+	type Response struct {
+		Url string `json:"url"`
+	}
+
+	var checkRunPayload Response
+	err = json.Unmarshal(response.Data, &checkRunPayload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if checkRunPayload.Url == "" {
+		return nil, errors.New("invalid payload url")
+	}
+
+	return &CheckRunAPI{
+		Url:       checkRunPayload.Url,
+		RepoId:    repoId,
+		InstallId: installId,
+		HostAPI:   hostApi,
+	}, nil
 }
 
-type CheckRunOutput struct {
-	Title   string `json:"title"`
-	Summary string `json:"summary"`
-}
+func (c CheckRunAPI) Update(
+	status string,
+	conclusion comm.CheckRunConclusion,
+	output comm.CheckRunOutput,
+) (bool, error) {
 
-type CheckRunBody struct {
-	Name    string         `json:"name"`
-	HeadSHA string         `json:"head_sha"`
-	Status  string         `json:"status"`
-	Output  CheckRunOutput `json:"output"`
+	hostCommand := comm.HostCommand[comm.UpdateCheckRunPayload]{
+		Instruction: "update-checkrun-api",
+		Payload: comm.UpdateCheckRunPayload{
+			Status:       status,
+			Conclusion:   conclusion,
+			Output:       output,
+			RepositoryId: c.RepoId,
+			InstallId:    c.InstallId,
+			Url:          c.Url,
+		},
+	}
+
+	response, err := c.SendCommand(&hostCommand)
+	type Response struct {
+		Ok bool `json:"ok"`
+	}
+
+	var checkRunPayload Response
+	err = json.Unmarshal(response.Data, &checkRunPayload)
+
+	if err != nil {
+		return false, err
+	}
+
+	return checkRunPayload.Ok, nil
+
 }

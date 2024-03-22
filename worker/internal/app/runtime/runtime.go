@@ -12,7 +12,7 @@ import (
 
 type WorkerRuntime struct {
 	ConnectionUrl url.URL
-	events        map[string]func(rawPayload json.RawMessage)
+	events        map[string]func(rawPayload json.RawMessage, conn *websocket.Conn)
 }
 
 func (r *WorkerRuntime) connect() (bool, *websocket.Conn) {
@@ -54,7 +54,7 @@ func (r *WorkerRuntime) waitForPayload(conn *websocket.Conn) bool {
 			log.Error().Msg("No registered event named " + payload.Action)
 		}
 
-		e(payload.Data)
+		e(payload.Data, conn)
 	}
 }
 
@@ -69,9 +69,12 @@ func (r *WorkerRuntime) Run() bool {
 	return true
 }
 
-func (r *WorkerRuntime) RegisterEvent(name string, event func(rawPayload json.RawMessage)) {
+func (r *WorkerRuntime) RegisterEvent(
+	name string,
+	event func(rawPayload json.RawMessage, conn *websocket.Conn),
+) {
 	if r.events == nil {
-		r.events = make(map[string]func(rawPayload json.RawMessage))
+		r.events = make(map[string]func(rawPayload json.RawMessage, conn *websocket.Conn))
 	}
 
 	r.events[name] = event

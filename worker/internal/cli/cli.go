@@ -2,7 +2,6 @@ package cli
 
 import (
 	"Bobby/pkg/utils"
-	"bobby-worker/internal/events/pushEvent"
 	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
@@ -14,11 +13,39 @@ import (
 	"time"
 )
 
+type LocalPathVariables struct {
+	Locker         string
+	Repository     string
+	ArtifactSource string
+	ArtifactOut    string
+}
+
+type EnvironmentType string
+
+const (
+	EnvNode EnvironmentType = "node"
+)
+
+type ExecutableCommand struct {
+	Name string
+	Args string
+}
+
+func (r ExecutableCommand) Flattened() string {
+	return fmt.Sprintf("%s %s", r.Name, r.Args)
+}
+
+type BuildEnvironment struct {
+	InitCommand  ExecutableCommand
+	BuildCommand ExecutableCommand
+	EnvType      EnvironmentType
+}
+
 // CliFactory can be created and fill the field.
 // This will provide required cli methods exclusively for pushEvent package.
 type CliFactory struct {
-	PathVars pushEvent.LocalPathVariables
-	BuildEnv pushEvent.BuildEnvironment
+	PathVars LocalPathVariables
+	BuildEnv BuildEnvironment
 }
 
 // CloneRepoWithToken clones a given repo to cli's local machine.
@@ -34,8 +61,11 @@ func (r *CliFactory) CloneRepoWithToken(cloneURL string) error {
 		},
 	)
 
-	log.Print(err)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // PullChanges pulls changes to existed local repository.
@@ -65,7 +95,7 @@ func (r *CliFactory) PullChanges() error {
 }
 
 // runCommand runs ExecutableCommand and controls its output.
-func (r *CliFactory) runCommand(command pushEvent.ExecutableCommand) error {
+func (r *CliFactory) runCommand(command ExecutableCommand) error {
 	idepsCMD := exec.Command(command.Name, command.Args)
 	idepsCMD.Dir = r.PathVars.Repository
 	idepsCMD.Stdout = os.Stdout

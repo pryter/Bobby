@@ -2,7 +2,7 @@ package network
 
 import (
 	"Bobby/pkg/comm"
-	"bobby-worker/internal/utils"
+	"Bobby/pkg/utils"
 	"fmt"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"

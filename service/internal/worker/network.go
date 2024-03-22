@@ -49,7 +49,7 @@ func closeWithMessage(c *websocket.Conn, message string) {
 	c.Close()
 }
 
-func (n Network) onMessageReceived(id int, message []byte, conn *websocket.Conn) {
+func (n Network) onMessageReceived(setupId string, id int, message []byte, conn *websocket.Conn) {
 	if id != 1 {
 		return
 	}
@@ -64,6 +64,12 @@ func (n Network) onMessageReceived(id int, message []byte, conn *websocket.Conn)
 	switch command.Instruction {
 	case "register":
 		registerAction(conn, command)
+		break
+	case "new-checkrun-api":
+		newCheckRunApiAction(conn, setupId, command)
+		break
+	case "update-checkrun-api":
+		updateCheckRunApiAction(conn, setupId, command)
 		break
 	default:
 		log.Error().Str("instruction", command.Instruction).Msg("Unrecognised command.")
@@ -136,6 +142,6 @@ func (n Network) HttpHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		n.onMessageReceived(mid, message, c)
+		n.onMessageReceived(id, mid, message, c)
 	}
 }

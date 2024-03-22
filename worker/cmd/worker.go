@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"Bobby/pkg/challenge"
 	"bobby-worker/internal/app/network"
 	"bobby-worker/internal/app/resources"
 	"bobby-worker/internal/app/runtime"
-	"bobby-worker/internal/challenge"
 	"bobby-worker/internal/events/pushEvent"
 	"encoding/json"
+	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 	"net/url"
 )
@@ -63,9 +64,10 @@ func StartWorkerService(options WorkerServiceOptions) bool {
 	w := runtime.WorkerRuntime{ConnectionUrl: u}
 
 	w.RegisterEvent(
-		"push", func(rawPayload json.RawMessage) {
+		"push", func(rawPayload json.RawMessage, conn *websocket.Conn) {
 			pushEvent.WebhookPushEvent(
 				rawPayload,
+				conn,
 				pushEvent.WebhookPushEventOptions{RuntimeBasePath: options.ServiceBasePath},
 			)
 		},

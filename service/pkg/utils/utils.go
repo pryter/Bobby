@@ -5,11 +5,28 @@ import (
 	"bytes"
 	"io"
 	"io/fs"
+	"net"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 )
+
+func GetMacAddr() ([]string, error) {
+	ifas, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	var as []string
+	for _, ifa := range ifas {
+		a := ifa.HardwareAddr.String()
+		if a != "" {
+			as = append(as, a)
+		}
+	}
+
+	return as, nil
+}
 
 // GetProjectRoot gives the project root.
 func GetProjectRoot() string {
